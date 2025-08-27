@@ -1,0 +1,8 @@
+{
+  "name": "task-list-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/aricionur/task-list-backend.git",
+  "author": "aricionur <aricionur@gmail.com>",
+  "license": "MIT"
+}
