@@ -2,11 +2,12 @@
   "name": "task-list-backend",
   "version": "1.0.0",
   "main": "index.js",
-   "type": "commonjs",
+  "type": "commonjs",
   "repository": "https://github.com/aricionur/task-list-backend.git",
   "author": "aricionur <aricionur@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^17.2.1",
     "express": "^5.1.0"
   },
   "devDependencies": {
