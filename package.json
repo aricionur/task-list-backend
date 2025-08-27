@@ -2,6 +2,7 @@
   "name": "task-list-backend",
   "version": "1.0.0",
   "main": "index.js",
+   "type": "module", 
   "repository": "https://github.com/aricionur/task-list-backend.git",
   "author": "aricionur <aricionur@gmail.com>",
   "license": "MIT",
@@ -12,5 +13,8 @@
     "@types/express": "^5.0.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
+  },
+   "scripts": {
+    "start": "ts-node src/index.ts"
   }
 }
