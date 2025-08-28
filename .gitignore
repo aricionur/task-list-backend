@@ -4,5 +4,4 @@
 # Compiled output
 /dist
 
-# dotenv environment variables
-.env
+
