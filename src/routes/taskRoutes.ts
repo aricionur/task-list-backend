@@ -4,10 +4,9 @@ export const taskRouter = Router();
 
 const mockTasks = [
   { id: 1, title: 'mock title - 1', description: 'mock description - 1', status: 'status - 1', dueDate: new Date() },
-  { id: 2, title: 'mock title - 2', description: 'mock description - 2', status: 'status - 2', dueDate: new Date() },
 ];
 
-let id = 1;
+let id = 2;
 
 // Create a new TASK
 taskRouter.post('/task', (req: Request, res: Response) => {

@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  node_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: task-list-app
+    ports:
+      - '3000:3000'
+    volumes:
+      # Mounts the current directory into the container's /app directory
+      - .:/app
+      # Prevents node_modules from being overwritten by the host machine's directory
+      - /app/node_modules
+    environment:
+      - PORT=3000
+    command: yarn dev
+    depends_on:
+      - db
+
+  db:
+    image: postgres:17.6-alpine
+    container_name: task-list-db
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

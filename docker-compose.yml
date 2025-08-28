@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # Node.js application service
+  node_app:
+    build: .
+    container_name: task-list-app
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    environment:
+      - PORT=3000
+      # Add PostgreSQL environment variables here if needed
+      # - DB_HOST=db
+      # - DB_USER=myuser
+      # - DB_PASSWORD=mypassword
+      # - DB_NAME=mydatabase
+
+  # PostgreSQL database service
+  db:
+    image: postgres:17.6-alpine
+    container_name: task-list-db
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+# Docker volumes for persistent data
+volumes:
+  postgres_data:
