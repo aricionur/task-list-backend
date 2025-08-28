@@ -18,8 +18,6 @@ taskRouter.post('/task', (req: Request, res: Response) => {
 
 // Get all items
 taskRouter.get('/task', (req, res) => {
-  console.log('************');
-  console.log('************');
   res.json(mockTasks);
 });
 
