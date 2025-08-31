@@ -7,6 +7,8 @@
   "author": "aricionur <aricionur@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@datadog/datadog-api-client": "^1.41.0",
+    "@sentry/node": "^10.8.0",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "joi": "^18.0.1",
