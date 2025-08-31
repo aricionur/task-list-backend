@@ -1,11 +1,10 @@
 import express, { Request, Response } from 'express';
 import taskRouter from './routes/taskRoutes';
-import dotenv from 'dotenv';
+import { PORT } from './constants';
+import { initializeDatabase } from './db/createTables';
 
-// Load env file
-dotenv.config();
+initializeDatabase();
 
-const port = process.env.PORT || 3000;
 const apiVersion = 'v1';
 
 const app = express();
@@ -20,6 +19,6 @@ app.use(express.json());
 // Register routes
 app.use(`/${apiVersion}`, taskRouter);
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+app.listen(PORT, () => {
+  console.log(`Server is running at http://localhost:${PORT}`);
 });
