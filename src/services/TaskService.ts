@@ -1,5 +1,3 @@
-// src/services/TaskService.ts
-
 import pool from '../db/pool';
 
 export class TaskService {
