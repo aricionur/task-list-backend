@@ -1,10 +1,11 @@
-import dotenv from 'dotenv';
+// import dotenv from "dotenv";
 
-dotenv.config();
+// dotenv.config();
 
 // API
 export const PORT = process.env.PORT;
 export const NODE_ENV = process.env.NODE_ENV;
+export const API_VERSION = process.env.API_VERSION;
 
 // DB
 export const POSTGRES_USER = process.env.POSTGRES_USER;
