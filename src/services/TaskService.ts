@@ -1,5 +1,5 @@
-import pool from '../db/pool';
-import { Task } from '../types';
+import pool from "../db/pool";
+import { Task } from "../types";
 
 export class TaskService {
   /**
@@ -11,7 +11,7 @@ export class TaskService {
     const { title, description, status, dueDate } = task;
 
     const result = await pool.query(
-      'INSERT INTO tasks (title, description, status, due_date) VALUES ($1, $2, $3, $4) RETURNING *',
+      "INSERT INTO tasks (title, description, status, due_date) VALUES ($1, $2, $3, $4) RETURNING *",
       [title, description, status, dueDate],
     );
 
@@ -23,7 +23,7 @@ export class TaskService {
    * @returns An array of all tasks.
    */
   async getAllTasks() {
-    const result = await pool.query('SELECT * FROM tasks');
+    const result = await pool.query("SELECT * FROM tasks");
 
     return result.rows;
   }
@@ -33,8 +33,8 @@ export class TaskService {
    * @param id - The ID of the task to retrieve.
    * @returns The task object, or null if not found.
    */
-  async getTaskById(id: string) {
-    const result = await pool.query('SELECT * FROM tasks WHERE id = $1', [id]);
+  async getTaskById(id: number) {
+    const result = await pool.query("SELECT * FROM tasks WHERE id = $1", [id]);
 
     return result.rows[0] || null;
   }
@@ -45,11 +45,11 @@ export class TaskService {
    * @param task - The new data for the task.
    * @returns The updated task object, or null if the task was not found.
    */
-  async updateTask(id: string, task: Task) {
+  async updateTask(id: number, task: Task) {
     const { title, description, status, dueDate } = task;
 
     const result = await pool.query(
-      'UPDATE tasks SET title = COALESCE($1, title), description = COALESCE($2, description), status = COALESCE($3, status), due_date = COALESCE($4, due_date) WHERE id = $5 RETURNING *',
+      "UPDATE tasks SET title = COALESCE($1, title), description = COALESCE($2, description), status = COALESCE($3, status), due_date = COALESCE($4, due_date) WHERE id = $5 RETURNING *",
       [title, description, status, dueDate, id],
     );
 
@@ -61,8 +61,8 @@ export class TaskService {
    * @param id - The ID of the task to delete.
    * @returns The deleted task object, or null if the task was not found.
    */
-  async deleteTask(id: string) {
-    const result = await pool.query('DELETE FROM tasks WHERE id = $1 RETURNING *', [id]);
+  async deleteTask(id: number) {
+    const result = await pool.query("DELETE FROM tasks WHERE id = $1 RETURNING *", [id]);
 
     return result.rows[0] || null;
   }

@@ -23,7 +23,7 @@ export function createTaskRouter(taskService: TaskService) {
   // Get a single task by ID with validation
   taskRouter.get("/task/:id", validateParams(taskIdSchema), async (req: Request, res: Response) => {
     const { id } = req.params;
-    const task = await taskService.getTaskById(id);
+    const task = await taskService.getTaskById(+id);
 
     task ? res.json(task) : res.status(404).send("Task not found");
   });
@@ -35,7 +35,7 @@ export function createTaskRouter(taskService: TaskService) {
     validate(updateTaskSchema),
     async (req: Request, res: Response) => {
       const { id } = req.params;
-      const updatedTask = await taskService.updateTask(id, req.body);
+      const updatedTask = await taskService.updateTask(+id, req.body);
 
       updatedTask ? res.json(updatedTask) : res.status(404).send("Task not found");
     },
@@ -44,7 +44,7 @@ export function createTaskRouter(taskService: TaskService) {
   // Delete a task with validation
   taskRouter.delete("/task/:id", validateParams(taskIdSchema), async (req: Request, res: Response) => {
     const { id } = req.params;
-    const deletedTask = await taskService.deleteTask(id);
+    const deletedTask = await taskService.deleteTask(+id);
 
     deletedTask ? res.json({ message: "Task deleted successfully" }) : res.status(404).send("Task not found");
   });
