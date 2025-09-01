@@ -1,0 +1,176 @@
+openapi: 3.0.0
+info:
+  title: Task Management API
+  version: 1.0.0
+  description: A simple CRUD API for managing tasks
+
+servers:
+  - url: http://localhost:3000/{basePath}
+    description: Development server
+    variables:
+      basePath:
+        default: v1
+
+paths:
+  /task:
+    get:
+      summary: Retrieve all tasks
+      description: Retrieves a list of all tasks in the database.
+      responses:
+        "200":
+          description: A list of tasks.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+    post:
+      summary: Create a new task
+      description: Creates a new task with a title and a description.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskRequest"
+      responses:
+        "201":
+          description: The created task.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: Invalid input.
+
+  /task/{id}:
+    get:
+      summary: Retrieve a single task by ID
+      description: Retrieves a single task based on its unique ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the task to retrieve.
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The requested task.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "404":
+          description: Task not found.
+    put:
+      summary: Update an existing task
+      description: Updates the title, description, or status of an existing task.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the task to update.
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskRequest"
+      responses:
+        "200":
+          description: The updated task.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Task not found.
+    delete:
+      summary: Delete a task by ID
+      description: Deletes a task from the database based on its unique ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the task to delete.
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Confirmation message that the task was deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Task deleted successfully"
+        "404":
+          description: Task not found.
+
+components:
+  schemas:
+    Task:
+      type: object
+      required:
+        - title
+        - status
+      properties:
+        title:
+          type: string
+          example: "Buy groceries"
+        description:
+          type: string
+          example: "Milk, bread, and eggs."
+        dueDate:
+          type: string
+          format: date
+          example: "2025-09-01"
+        status:
+          $ref: "#/components/schemas/Status"
+    CreateTaskRequest:
+      type: object
+      required:
+        - title
+        - status
+      properties:
+        title:
+          type: string
+          example: "Buy groceries"
+        description:
+          type: string
+          example: "Milk, bread, and eggs."
+        dueDate:
+          type: string
+          format: date
+          example: "2025-09-01"
+        status:
+          $ref: "#/components/schemas/Status"
+    UpdateTaskRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          example: "Updated task title"
+        description:
+          type: string
+          example: "New description."
+        dueDate:
+          type: string
+          format: date
+          example: "2025-09-01"
+        status:
+          $ref: "#/components/schemas/Status"
+    Status:
+      type: string
+      enum:
+        - "Todo"
+        - "In Progress"
+        - "Done"
