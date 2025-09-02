@@ -6,6 +6,7 @@ import swaggerUi from "swagger-ui-express";
 import path from "path";
 import fs from "fs";
 import yaml from "js-yaml";
+import cors from "cors";
 
 import { PORT, API_VERSION } from "./constants";
 import { initializeDatabase } from "./db/createTables";
@@ -24,6 +25,8 @@ const openApiDocument = yaml.load(fs.readFileSync(path.join(__dirname, "../opena
 
 // Serve Swagger documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
+
+app.use(cors());
 
 app.get("/", (req: Request, res: Response) => {
   res.send("API Version: " + API_VERSION);

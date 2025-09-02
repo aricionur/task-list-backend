@@ -9,6 +9,7 @@
   "dependencies": {
     "@datadog/datadog-api-client": "^1.41.0",
     "@sentry/node": "^10.8.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "joi": "^18.0.1",
@@ -17,6 +18,7 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
     "@types/joi": "^17.2.3",
