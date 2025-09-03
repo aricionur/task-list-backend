@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -9,14 +10,10 @@ import yaml from "js-yaml";
 import cors from "cors";
 
 import { PORT, API_VERSION } from "./constants";
-import { initializeDatabase } from "./db/createTables";
 import { logError } from "./logging/logger";
-import { checkDatabaseConnection } from "./db/dbConnection";
-import { TaskService } from "./services/TaskService";
 import { createTaskRouter } from "./routes/taskRoutes";
-
-checkDatabaseConnection();
-initializeDatabase();
+import { TaskService } from "./services/TaskService";
+import { initializeDatabase } from "./db/db";
 
 const app = express();
 
@@ -26,25 +23,32 @@ const openApiDocument = yaml.load(fs.readFileSync(path.join(__dirname, "../opena
 // Serve Swagger documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
+// Add cors middleware
 app.use(cors());
-
-app.get("/", (req: Request, res: Response) => {
-  res.send("API Version: " + API_VERSION);
-});
 
 // Middleware to parse JSON
 app.use(express.json());
 
-// Register routes
-const taskService = new TaskService();
-app.use(`/${API_VERSION}`, createTaskRouter(taskService));
+// Initialize the database and then start the server
+async function startServer() {
+  await initializeDatabase(); // Wait for the database to be ready
 
-// Register a generic error handler
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  logError("Unhandled server error", err); // Send the error to a cloud service for monitoring
-  res.status(500).send("Oops! Something went wrong!");
-});
+  // Create service instance after the database connection is established
+  const taskService = new TaskService();
 
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
-});
+  // Register routes
+  app.use(`/${API_VERSION}`, createTaskRouter(taskService));
+
+  // Register a generic error handler
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    logError("Unhandled server error", err);
+    res.status(500).send("Oops! Something went wrong!");
+  });
+
+  // Start the server
+  app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT}`);
+  });
+}
+
+startServer();

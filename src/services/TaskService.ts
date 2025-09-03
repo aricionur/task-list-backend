@@ -1,21 +1,19 @@
-import pool from "../db/pool";
-import { Task } from "../types";
+import { AppDataSource } from "../db/dataSource";
+import { Task } from "../entity/Task";
 
 export class TaskService {
+  private taskRepository = AppDataSource.getRepository(Task);
+
   /**
    * Creates a new task in the database.
    * @param task - The data for the new task.
    * @returns The created task object.
    */
   async createTask(task: Task) {
-    const { title, description, status, dueDate } = task;
-
-    const result = await pool.query(
-      "INSERT INTO tasks (title, description, status, due_date) VALUES ($1, $2, $3, $4) RETURNING *",
-      [title, description, status, dueDate],
-    );
-
-    return result.rows[0];
+    // The save method handles both creating and updating entities
+    const newTask = this.taskRepository.create(task);
+    await this.taskRepository.save(newTask);
+    return newTask;
   }
 
   /**
@@ -23,9 +21,7 @@ export class TaskService {
    * @returns An array of all tasks.
    */
   async getAllTasks() {
-    const result = await pool.query("SELECT * FROM tasks");
-
-    return result.rows;
+    return this.taskRepository.find();
   }
 
   /**
@@ -34,9 +30,7 @@ export class TaskService {
    * @returns The task object, or null if not found.
    */
   async getTaskById(id: number) {
-    const result = await pool.query("SELECT * FROM tasks WHERE id = $1", [id]);
-
-    return result.rows[0] || null;
+    return this.taskRepository.findOneBy({ id });
   }
 
   /**
@@ -45,15 +39,15 @@ export class TaskService {
    * @param task - The new data for the task.
    * @returns The updated task object, or null if the task was not found.
    */
-  async updateTask(id: number, task: Task) {
-    const { title, description, status, dueDate } = task;
+  async updateTask(id: number, task: Partial<Task>) {
+    const existingTask = await this.taskRepository.findOneBy({ id });
+    if (!existingTask) {
+      return null;
+    }
 
-    const result = await pool.query(
-      "UPDATE tasks SET title = COALESCE($1, title), description = COALESCE($2, description), status = COALESCE($3, status), due_date = COALESCE($4, due_date) WHERE id = $5 RETURNING *",
-      [title, description, status, dueDate, id],
-    );
-
-    return result.rows[0] || null;
+    this.taskRepository.merge(existingTask, task);
+    const updatedTask = await this.taskRepository.save(existingTask);
+    return updatedTask;
   }
 
   /**
@@ -62,8 +56,12 @@ export class TaskService {
    * @returns The deleted task object, or null if the task was not found.
    */
   async deleteTask(id: number) {
-    const result = await pool.query("DELETE FROM tasks WHERE id = $1 RETURNING *", [id]);
+    const taskToDelete = await this.taskRepository.findOneBy({ id });
+    if (!taskToDelete) {
+      return null;
+    }
 
-    return result.rows[0] || null;
+    await this.taskRepository.remove(taskToDelete);
+    return taskToDelete;
   }
 }
