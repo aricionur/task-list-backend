@@ -3,25 +3,23 @@ import { TaskService } from "../services/TaskService";
 import { validate, validateParams } from "../middleware/validationMiddleware";
 import { createTaskSchema, updateTaskSchema, taskIdSchema } from "../schemas/validationSchemas";
 
-export function createTaskRouter(taskService: TaskService) {
-  const taskRouter = Router();
-
+export function taskRoutes(router: Router, taskService: TaskService) {
   // Create a new task with validation
-  taskRouter.post("/task", validate(createTaskSchema), async (req: Request, res: Response) => {
+  router.post("/task", validate(createTaskSchema), async (req: Request, res: Response) => {
     const newTask = await taskService.createTask(req.body);
 
     res.status(201).json(newTask);
   });
 
   // Get all tasks
-  taskRouter.get("/task", async (req: Request, res: Response) => {
+  router.get("/task", async (req: Request, res: Response) => {
     const allTasks = await taskService.getAllTasks();
 
     res.json(allTasks);
   });
 
   // Get a single task by ID with validation
-  taskRouter.get("/task/:id", validateParams(taskIdSchema), async (req: Request, res: Response) => {
+  router.get("/task/:id", validateParams(taskIdSchema), async (req: Request, res: Response) => {
     const { id } = req.params;
     const task = await taskService.getTaskById(+id);
 
@@ -29,7 +27,7 @@ export function createTaskRouter(taskService: TaskService) {
   });
 
   // Update an existing task with validation
-  taskRouter.put(
+  router.put(
     "/task/:id",
     validateParams(taskIdSchema),
     validate(updateTaskSchema),
@@ -42,12 +40,12 @@ export function createTaskRouter(taskService: TaskService) {
   );
 
   // Delete a task with validation
-  taskRouter.delete("/task/:id", validateParams(taskIdSchema), async (req: Request, res: Response) => {
+  router.delete("/task/:id", validateParams(taskIdSchema), async (req: Request, res: Response) => {
     const { id } = req.params;
     const deletedTask = await taskService.deleteTask(+id);
 
     deletedTask ? res.json({ message: "Task deleted successfully" }) : res.status(404).send("Task not found");
   });
 
-  return taskRouter;
+  return router;
 }

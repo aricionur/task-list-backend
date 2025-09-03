@@ -11,35 +11,31 @@ import cors from "cors";
 
 import { PORT, API_VERSION } from "./constants";
 import { logError } from "./logging/logger";
-import { createTaskRouter } from "./routes/taskRoutes";
-import { TaskService } from "./services/TaskService";
 import { initializeDatabase } from "./db/db";
+import registerRoutes from "./routes/register";
 
 const app = express();
 
 // Load OpenAPI specification from YAML file using an absolute path
 const openApiDocument = yaml.load(fs.readFileSync(path.join(__dirname, "../openapi.yaml"), "utf8")) as object;
 
-// Serve Swagger documentation
+// Add Swagger documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
-// Add cors middleware
+// Add CORS
 app.use(cors());
 
-// Middleware to parse JSON
+// Add JSON parser
 app.use(express.json());
 
 // Initialize the database and then start the server
 async function startServer() {
   await initializeDatabase(); // Wait for the database to be ready
 
-  // Create service instance after the database connection is established
-  const taskService = new TaskService();
-
   // Register routes
-  app.use(`/${API_VERSION}`, createTaskRouter(taskService));
+  registerRoutes(app);
 
-  // Register a generic error handler
+  // Add generic error handler
   app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     logError("Unhandled server error", err);
     res.status(500).send("Oops! Something went wrong!");
