@@ -1,3 +1,4 @@
+// tests/integration/task.integration.test.ts
 import express from "express";
 import request from "supertest";
 import { initializeTestDatabase, testDataSource } from "../setupTestDB";
@@ -9,6 +10,21 @@ import { API_VERSION } from "../../src/constants";
 describe("Task API Integration Tests (In-Memory DB)", () => {
   let app: express.Application;
   let taskService: TaskService;
+
+  const createTaskPayload = { title: "In-Memory Test Task", status: "Todo" };
+  const invalidTaskPayload = { description: "No title or status" };
+
+  // ----------------------------
+  // Helper functions
+  // ----------------------------
+  const postTask = (payload: object) => request(app).post(`/${API_VERSION}/task`).send(payload);
+
+  const getTasks = () => request(app).get(`/${API_VERSION}/task`);
+
+  const putTask = (id: string | number, payload: object) =>
+    request(app).put(`/${API_VERSION}/task/${id}`).send(payload);
+
+  const deleteTask = (id: string | number) => request(app).delete(`/${API_VERSION}/task/${id}`);
 
   beforeAll(async () => {
     // Initialize in-memory DB
@@ -26,7 +42,6 @@ describe("Task API Integration Tests (In-Memory DB)", () => {
   });
 
   afterEach(async () => {
-    // Clear table after each test
     await testDataSource.getRepository(Task).clear();
   });
 
@@ -35,114 +50,94 @@ describe("Task API Integration Tests (In-Memory DB)", () => {
   });
 
   // ----------------------------
-  //       CRUD tests
+  // CRUD Tests
   // ----------------------------
-  it(`POST /${API_VERSION}/task should create a task`, async () => {
-    // ARRANGE
-    const payload = { title: "In-Memory Test Task", status: "Todo" };
+  it("should create a task", async () => {
+    const response = await postTask(createTaskPayload);
 
-    // ACT
-    const response = await request(app).post(`/${API_VERSION}/task`).send(payload);
-
-    // ASSERT
     expect(response.status).toBe(201);
-    expect(response.body).toMatchObject(payload);
+    expect(response.body).toMatchObject(createTaskPayload);
 
-    // Verify persistence in in-memory DB
     const savedTask = await testDataSource.getRepository(Task).findOneBy({ id: response.body.id });
     expect(savedTask).toBeTruthy();
-    expect(savedTask?.title).toBe(payload.title);
+    expect(savedTask?.title).toBe(createTaskPayload.title);
   });
 
-  it(`GET /${API_VERSION}/task should return tasks`, async () => {
-    // ARRANGE
+  it("should return all tasks", async () => {
     await testDataSource.getRepository(Task).save({ title: "Seed Task", status: "Todo" });
 
-    // ACT
-    const response = await request(app).get(`/${API_VERSION}/task`);
+    const response = await getTasks();
 
-    // ASSERT
     expect(response.status).toBe(200);
     expect(response.body.length).toBe(1);
     expect(response.body[0].title).toBe("Seed Task");
   });
 
-  it(`PUT /${API_VERSION}/task/:id should update a task`, async () => {
-    // ARRANGE
+  it("should update a task", async () => {
     const task = await testDataSource.getRepository(Task).save({ title: "Old Title", status: "Todo" });
 
-    // ACT
-    const response = await request(app).put(`/${API_VERSION}/task/${task.id}`).send({ title: "New Title" });
+    const response = await putTask(task.id, { title: "New Title" });
 
-    // ASSERT
     expect(response.status).toBe(200);
     expect(response.body.title).toBe("New Title");
   });
 
-  it(`DELETE /${API_VERSION}/task/:id should delete a task`, async () => {
-    // ARRANGE
+  it("should delete a task", async () => {
     const task = await testDataSource.getRepository(Task).save({ title: "Delete Me", status: "Todo" });
 
-    // ACT
-    const response = await request(app).delete(`/${API_VERSION}/task/${task.id}`);
+    const response = await deleteTask(task.id);
 
-    // ASSERT
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ message: "Task deleted successfully" });
 
-    // ACT
     const deleted = await testDataSource.getRepository(Task).findOneBy({ id: task.id });
-
-    // ASSERT
     expect(deleted).toBeNull();
   });
 
   // ----------------------------
-  //    Joi Validation Tests
+  // Joi Validation Tests
   // ----------------------------
   describe("Joi Validation Tests", () => {
-    it(`POST /${API_VERSION}/task should fail without required fields`, async () => {
-      const invalidPayload = { description: "No title or status" };
-
-      const response = await request(app).post(`/${API_VERSION}/task`).send(invalidPayload);
+    it("should fail POST without required fields", async () => {
+      const response = await postTask(invalidTaskPayload);
 
       expect(response.status).toBe(400);
       expect(response.body.errors).toContain('"title" is required');
       expect(response.body.errors).toContain('"status" is required');
     });
 
-    it(`POST /${API_VERSION}/task should fail with invalid status`, async () => {
-      const invalidPayload = { title: "Task", status: "InvalidStatus" };
+    it("should fail POST with invalid status", async () => {
+      const task = { title: "Task", status: "InvalidStatus" };
 
-      const response = await request(app).post(`/${API_VERSION}/task`).send(invalidPayload);
+      const response = await postTask(task);
 
       expect(response.status).toBe(400);
       expect(response.body.errors[0]).toContain('"status" must be one of');
     });
 
-    it(`PUT /${API_VERSION}/task/:id should fail with invalid ID`, async () => {
+    it("should fail PUT with invalid ID", async () => {
       const id = "abc";
-      const task = { title: "New Title" };
 
-      const response = await request(app).put(`/${API_VERSION}/task/${id}`).send(task);
+      const response = await putTask(id, { title: "New Title" });
 
       expect(response.status).toBe(400);
       expect(response.body.errors[0]).toContain('"id" must be a number');
     });
 
-    it(`PUT /${API_VERSION}/task/:id should fail with invalid status`, async () => {
+    it("should fail PUT with invalid status", async () => {
+      const invalidStatusTask = { status: "InvalidStatus" };
       const task = await testDataSource.getRepository(Task).save({ title: "Task", status: "Todo" });
 
-      const response = await request(app).put(`/${API_VERSION}/task/${task.id}`).send({ status: "InvalidStatus" });
+      const response = await putTask(task.id, invalidStatusTask);
 
       expect(response.status).toBe(400);
       expect(response.body.errors[0]).toContain('"status" must be one of');
     });
 
-    it(`DELETE /${API_VERSION}/task/:id should fail with invalid ID`, async () => {
+    it("should fail DELETE with invalid ID", async () => {
       const id = "abc";
 
-      const response = await request(app).delete(`/${API_VERSION}/task/${id}`);
+      const response = await deleteTask(id);
 
       expect(response.status).toBe(400);
       expect(response.body.errors[0]).toContain('"id" must be a number');
