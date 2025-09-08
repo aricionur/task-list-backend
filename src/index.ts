@@ -17,7 +17,7 @@ import { genericErrorHandler } from "./middleware/errorHandler";
 
 const app = express();
 
-// Load OpenAPI specification from YAML file using an absolute path
+// Load OpenAPI specification from YAML file
 const openApiDocument = yaml.load(fs.readFileSync(path.join(__dirname, "../openapi.yaml"), "utf8")) as object;
 
 // Add Swagger documentation
