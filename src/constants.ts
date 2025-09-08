@@ -5,7 +5,7 @@
 // API
 export const PORT = process.env.PORT;
 export const NODE_ENV = process.env.NODE_ENV;
-export const API_VERSION = process.env.API_VERSION;
+export const API_VERSION = "v1";
 
 // DB
 export const POSTGRES_USER = process.env.POSTGRES_USER;

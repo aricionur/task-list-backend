@@ -12,6 +12,22 @@ servers:
         default: v1
 
 paths:
+  /:
+    get:
+      summary: Get API version
+      description: Returns the current API version.
+      responses:
+        "200":
+          description: A JSON object with the API version.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  apiVersion:
+                    type: string
+                    example: v1
+
   /task:
     get:
       summary: Retrieve all tasks
