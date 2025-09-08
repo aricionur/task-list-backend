@@ -2,11 +2,12 @@ import { Router, Request, Response } from "express";
 import { TaskService } from "../services/TaskService";
 import { taskRoutes } from "./taskRoutes";
 import { API_VERSION } from "../constants";
+import { AppDataSource } from "../db/dataSource";
 
 const router = Router();
 
 // Create services
-const taskService = new TaskService();
+const taskService = new TaskService(AppDataSource);
 
 export const registerRoutes = (app) => {
   taskRoutes(router, taskService);

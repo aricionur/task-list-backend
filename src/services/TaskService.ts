@@ -1,8 +1,13 @@
+import { DataSource } from "typeorm";
 import { AppDataSource } from "../db/dataSource";
 import { CreateTask, Task } from "../entity/Task";
 
 export class TaskService {
-  private taskRepository = AppDataSource.getRepository(Task);
+  private taskRepository;
+
+  constructor(dataSource: DataSource) {
+    this.taskRepository = dataSource.getRepository(Task);
+  }
 
   /**
    * Creates a new task in the database.

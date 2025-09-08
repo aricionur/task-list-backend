@@ -1,28 +1,30 @@
 import { AppDataSource } from "../../../src/db/dataSource";
 import { TaskService } from "../../../src/services/TaskService";
 import { CreateTask, Task } from "../../../src/entity/Task";
+import { DataSource } from "typeorm";
 
-// Mock the AppDataSource and its getRepository method
-jest.mock("../../../src/db/dataSource", () => ({
-  AppDataSource: {
-    getRepository: jest.fn().mockReturnValue({
+describe("TaskService", () => {
+  let taskService: TaskService;
+  let mockTaskRepository: any;
+  let mockDataSource: Partial<DataSource>;
+
+  beforeEach(() => {
+    mockTaskRepository = {
       create: jest.fn(),
       save: jest.fn(),
       find: jest.fn(),
       findOneBy: jest.fn(),
       merge: jest.fn(),
       remove: jest.fn(),
-    }),
-  },
-}));
+    };
 
-describe("TaskService", () => {
-  let taskService: TaskService;
-  let mockTaskRepository: any;
+    mockDataSource = {
+      getRepository: jest.fn().mockReturnValue(mockTaskRepository),
+    };
 
-  beforeEach(() => {
-    taskService = new TaskService();
-    mockTaskRepository = AppDataSource.getRepository(Task);
+    // Pass the mockDataSource to TaskService
+    taskService = new TaskService(mockDataSource as DataSource);
+
     jest.clearAllMocks();
   });
 
