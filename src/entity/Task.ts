@@ -9,11 +9,13 @@ export class Task {
   title: string;
 
   @Column({ nullable: true })
-  description: string;
+  description?: string;
 
   @Column()
   status: string;
 
   @Column({ name: "due_date", nullable: true })
-  dueDate: Date;
+  dueDate?: Date;
 }
+
+export type CreateTask = Omit<Task, "id">;

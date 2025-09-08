@@ -1,5 +1,5 @@
 import { AppDataSource } from "../db/dataSource";
-import { Task } from "../entity/Task";
+import { CreateTask, Task } from "../entity/Task";
 
 export class TaskService {
   private taskRepository = AppDataSource.getRepository(Task);
@@ -9,11 +9,9 @@ export class TaskService {
    * @param task - The data for the new task.
    * @returns The created task object.
    */
-  async createTask(task: Task) {
-    // The save method handles both creating and updating entities
+  async createTask(task: CreateTask) {
     const newTask = this.taskRepository.create(task);
-    await this.taskRepository.save(newTask);
-    return newTask;
+    return await this.taskRepository.save(newTask);
   }
 
   /**
@@ -21,7 +19,7 @@ export class TaskService {
    * @returns An array of all tasks.
    */
   async getAllTasks() {
-    return this.taskRepository.find();
+    return this.taskRepository.find({ order: { id: "ASC" } });
   }
 
   /**
@@ -45,9 +43,8 @@ export class TaskService {
       return null;
     }
 
-    this.taskRepository.merge(existingTask, task);
-    const updatedTask = await this.taskRepository.save(existingTask);
-    return updatedTask;
+    const mergedTask = this.taskRepository.merge(existingTask, task);
+    return await this.taskRepository.save(mergedTask);
   }
 
   /**

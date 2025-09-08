@@ -1,5 +1,5 @@
-import Joi from 'joi';
-import { Status } from '../types';
+import Joi from "joi";
+import { Status } from "../types";
 
 // Schema for creating a new task
 export const createTaskSchema = Joi.object({
@@ -13,6 +13,7 @@ export const createTaskSchema = Joi.object({
 
 // Schema for updating an existing task
 export const updateTaskSchema = Joi.object({
+  id: Joi.number().integer().min(1).optional(),
   title: Joi.string().optional(),
   description: Joi.string().optional(),
   status: Joi.string()

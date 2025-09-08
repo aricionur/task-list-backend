@@ -1,91 +1,146 @@
+import { AppDataSource } from "../../src/db/dataSource";
 import { TaskService } from "../../src/services/TaskService";
-import pool from "../../src/db/pool";
-import { Status, Task } from "../../src/types";
+import { CreateTask, Task } from "../../src/entity/Task";
 
-// Mock the entire pool module
-jest.mock("../../src/db/pool", () => ({
-  query: jest.fn(),
+// Mock the AppDataSource and its getRepository method
+jest.mock("../../src/db/dataSource", () => ({
+  AppDataSource: {
+    getRepository: jest.fn().mockReturnValue({
+      create: jest.fn(),
+      save: jest.fn(),
+      find: jest.fn(),
+      findOneBy: jest.fn(),
+      merge: jest.fn(),
+      remove: jest.fn(),
+    }),
+  },
 }));
 
 describe("TaskService", () => {
   let taskService: TaskService;
+  let mockTaskRepository: any;
 
   beforeEach(() => {
     taskService = new TaskService();
-    (pool.query as jest.Mock).mockClear();
+    mockTaskRepository = AppDataSource.getRepository(Task);
+    jest.clearAllMocks();
   });
 
-  // Test for createTask
-  it("should create a new task", async () => {
+  it("should create and save a new task with all fields", async () => {
     // Arrange
-    const mockTask: Task = { title: "Test Task", status: Status.Todo };
-    (pool.query as jest.Mock).mockResolvedValue({ rows: [{ id: 1, ...mockTask }] });
+    const id = 1;
+    const dueDate = new Date();
+    const mockTaskData = {
+      title: "Test Task",
+      description: "Test description with due date",
+      status: "Todo",
+      dueDate,
+    } as CreateTask;
+    const createdTask = { id, ...mockTaskData } as Task;
+
+    mockTaskRepository.create.mockReturnValue(mockTaskData);
+    mockTaskRepository.save.mockResolvedValue(createdTask);
 
     // Act
-    const newTask = await taskService.createTask(mockTask);
+    const result = await taskService.createTask(mockTaskData);
 
     // Assert
-    expect(pool.query).toHaveBeenCalledWith(
-      "INSERT INTO tasks (title, description, status, due_date) VALUES ($1, $2, $3, $4) RETURNING *",
-      [mockTask.title, undefined, mockTask.status, undefined],
-    );
-    expect(newTask).toEqual({ id: 1, ...mockTask });
+    expect(mockTaskRepository.create).toHaveBeenCalledWith(mockTaskData);
+    expect(mockTaskRepository.save).toHaveBeenCalledWith(mockTaskData);
+    expect(result).toEqual(createdTask);
   });
 
-  // Test for getAllTasks
-  it("should retrieve all tasks", async () => {
+  it("should create and save a new task without description or due date", async () => {
+    // Arrange
+    const mockTaskData = { title: "Simple Task", status: "Todo" } as CreateTask;
+    const createdTask = { id: 2, ...mockTaskData } as Task;
+
+    mockTaskRepository.create.mockReturnValue(mockTaskData);
+    mockTaskRepository.save.mockResolvedValue(createdTask);
+
+    // Act
+    const result = await taskService.createTask(mockTaskData);
+
+    // Assert
+    expect(mockTaskRepository.create).toHaveBeenCalledWith(mockTaskData);
+    expect(mockTaskRepository.save).toHaveBeenCalledWith(mockTaskData);
+    expect(result).toEqual(createdTask);
+  });
+
+  it("should retrieve all tasks with full data", async () => {
     // Arrange
     const mockTasks = [
-      { id: 1, title: "Task 1", status: Status.Todo },
-      { id: 2, title: "Task 2", status: Status.InProgress },
-    ];
-    (pool.query as jest.Mock).mockResolvedValue({ rows: mockTasks });
+      { id: 1, title: "Task 1", description: "Desc 1", status: "Todo", dueDate: new Date() },
+      { id: 2, title: "Task 2", description: null, status: "InProgress", dueDate: null },
+    ] as Task[];
+
+    mockTaskRepository.find.mockResolvedValue(mockTasks);
 
     // Act
-    const tasks = await taskService.getAllTasks();
+    const result = await taskService.getAllTasks();
 
     // Assert
-    expect(pool.query).toHaveBeenCalledWith("SELECT * FROM tasks");
-    expect(tasks).toEqual(mockTasks);
+    expect(mockTaskRepository.find).toHaveBeenCalledWith({ order: { id: "ASC" } });
+    expect(result).toEqual(mockTasks);
   });
 
-  // Test for getTaskById
-  it("should retrieve a single task by id", async () => {
+  it("should retrieve a single task by its ID with all fields", async () => {
     // Arrange
-    const mockTask = { id: 1, title: "Task 1", status: Status.Todo };
-    (pool.query as jest.Mock).mockResolvedValue({ rows: [mockTask] });
+    const mockTask = {
+      id: 1,
+      title: "Task 1",
+      description: "Sample description",
+      status: "Todo",
+      dueDate: new Date(),
+    } as Task;
+    mockTaskRepository.findOneBy.mockResolvedValue(mockTask);
 
     // Act
-    const task = await taskService.getTaskById(1);
+    const result = await taskService.getTaskById(1);
 
     // Assert
-    expect(pool.query).toHaveBeenCalledWith("SELECT * FROM tasks WHERE id = $1", [1]);
-    expect(task).toEqual(mockTask);
+    expect(mockTaskRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
+    expect(result).toEqual(mockTask);
   });
 
-  // Test for a non-existent task
-  it("should return null if task not found", async () => {
+  it("should update an existing task and return the merged object", async () => {
     // Arrange
-    (pool.query as jest.Mock).mockResolvedValue({ rows: [] });
+    const existingTask = { id: 1, title: "Old Title", description: "Old Desc", status: "Todo" } as Task;
+    const updateData = { title: "New Title", status: "Done", dueDate: new Date() };
+    const mergedTask = { ...existingTask, ...updateData } as Task;
+
+    mockTaskRepository.findOneBy.mockResolvedValue(existingTask);
+    mockTaskRepository.merge.mockReturnValue(mergedTask);
+    mockTaskRepository.save.mockResolvedValue(mergedTask);
 
     // Act
-    const task = await taskService.getTaskById(999);
+    const result = await taskService.updateTask(1, updateData);
 
     // Assert
-    expect(task).toBeNull();
+    expect(mockTaskRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
+    expect(mockTaskRepository.merge).toHaveBeenCalledWith(existingTask, updateData);
+    expect(mockTaskRepository.save).toHaveBeenCalledWith(mergedTask);
+    expect(result).toEqual(mergedTask);
   });
 
-  // Test for deleteTask
-  it("should delete a task by id", async () => {
+  it("should delete an existing task and return the deleted object", async () => {
     // Arrange
-    const mockTask = { id: 1, title: "Task 1", status: Status.Todo };
-    (pool.query as jest.Mock).mockResolvedValue({ rows: [mockTask] });
+    const taskToDelete = {
+      id: 1,
+      title: "Task to delete",
+      description: "This will be gone",
+      status: "Todo",
+      dueDate: new Date(),
+    } as Task;
+    mockTaskRepository.findOneBy.mockResolvedValue(taskToDelete);
+    mockTaskRepository.remove.mockResolvedValue(taskToDelete);
 
     // Act
-    const deletedTask = await taskService.deleteTask(1);
+    const result = await taskService.deleteTask(1);
 
     // Assert
-    expect(pool.query).toHaveBeenCalledWith("DELETE FROM tasks WHERE id = $1 RETURNING *", [1]);
-    expect(deletedTask).toEqual(mockTask);
+    expect(mockTaskRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
+    expect(mockTaskRepository.remove).toHaveBeenCalledWith(taskToDelete);
+    expect(result).toEqual(taskToDelete);
   });
 });
