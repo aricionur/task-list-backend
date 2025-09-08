@@ -13,6 +13,7 @@ import { PORT, API_VERSION } from "./constants";
 import { logError } from "./logging/logger";
 import { initializeDatabase } from "./db/db";
 import registerRoutes from "./routes/register";
+import { genericErrorHandler } from "./middleware/errorHandler";
 
 const app = express();
 
@@ -36,10 +37,7 @@ async function startServer() {
   registerRoutes(app);
 
   // Add generic error handler
-  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    logError("Unhandled server error", err);
-    res.status(500).send("Oops! Something went wrong!");
-  });
+  app.use(genericErrorHandler);
 
   // Start the server
   app.listen(PORT, () => {
