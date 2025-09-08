@@ -1,9 +1,9 @@
-import { AppDataSource } from "../../src/db/dataSource";
-import { TaskService } from "../../src/services/TaskService";
-import { CreateTask, Task } from "../../src/entity/Task";
+import { AppDataSource } from "../../../src/db/dataSource";
+import { TaskService } from "../../../src/services/TaskService";
+import { CreateTask, Task } from "../../../src/entity/Task";
 
 // Mock the AppDataSource and its getRepository method
-jest.mock("../../src/db/dataSource", () => ({
+jest.mock("../../../src/db/dataSource", () => ({
   AppDataSource: {
     getRepository: jest.fn().mockReturnValue({
       create: jest.fn(),
