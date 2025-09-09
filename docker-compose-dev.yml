@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   node_app:
@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: task-list-app
     ports:
-      - '3000:3000'
+      - "3000:3000"
     volumes:
       # Mounts the current directory into the container's /app directory
       - .:/app
@@ -24,7 +24,7 @@ services:
     container_name: task-list-db
     restart: always
     ports:
-      - '5432:5432'
+      - "5432:5432"
     environment:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword

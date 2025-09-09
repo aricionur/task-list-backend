@@ -25,6 +25,9 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json .
 
+# Copy the OpenAPI spec file
+COPY openapi.yaml .
+
 # Expose the application port
 EXPOSE 3000
 
