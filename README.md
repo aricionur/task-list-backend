@@ -71,6 +71,16 @@ The API will be available at `http://localhost:3000`.
 
 ---
 
+### 📄 API Documentation
+
+This project uses **Swagger UI** to provide interactive API documentation. Once the server is running, you can access the documentation at the following URL:
+
+```
+http://localhost:3000/api-docs
+```
+
+The documentation provides a complete overview of all available endpoints, including request and response schemas, allowing you to test the API directly from your browser.
+
 ## 🐳 Docker
 
 The easiest way to run this application is with Docker and Docker Compose. This project provides separate Compose files for development and production environments.

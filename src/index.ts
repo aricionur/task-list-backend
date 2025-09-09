@@ -2,15 +2,14 @@ import "reflect-metadata";
 import dotenv from "dotenv";
 dotenv.config();
 
-import express, { NextFunction, Request, Response } from "express";
+import express from "express";
 import swaggerUi from "swagger-ui-express";
 import path from "path";
 import fs from "fs";
 import yaml from "js-yaml";
 import cors from "cors";
 
-import { PORT, API_VERSION } from "./constants";
-import { logError } from "./logging/logger";
+import { PORT } from "./constants";
 import { initializeDatabase } from "./db/db";
 import registerRoutes from "./routes/register";
 import { genericErrorHandler } from "./middleware/errorHandler";
